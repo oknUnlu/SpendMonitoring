@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useTheme, ThemeType } from '../context/ThemeContext';
+import { useTheme, themeOptions } from '../context/ThemeContext';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCurrency } from '../context/CurrencyContext';
 
 const currencies = [
   { code: 'USD', symbol: '$' },
@@ -17,8 +19,8 @@ const currencies = [
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
-  const [isDarkMode, setIsDarkMode] = useState(theme === 'dark');
+  const { currency, setCurrency } = useCurrency();
+  const [isDarkMode, setIsDarkMode] = useState(theme.name === 'dark');
 
   const handleThemeChange = () => {
     const newTheme = isDarkMode ? 'light' : 'dark';
@@ -27,9 +29,14 @@ const Settings = () => {
     AsyncStorage.setItem('theme', newTheme);
   };
 
-  const handleCurrencySelect = (currency: string) => {
-    setSelectedCurrency(currency);
-    AsyncStorage.setItem('currency', currency);
+  const handleCurrencySelect = (currencyCode: string) => {
+    const selectedCurrency = currencies.find(c => c.code === currencyCode);
+    if (selectedCurrency) {
+      setCurrency({
+        code: selectedCurrency.code,
+        symbol: selectedCurrency.symbol
+      });
+    }
   };
 
   const exportData = async (format: 'CSV' | 'PDF') => {
@@ -64,78 +71,99 @@ const Settings = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <MaterialIcons name="arrow-back" size={24} color={isDarkMode ? '#FFF' : '#2C3E50'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Settings</Text>
-      </View>
-
-      {/* Theme Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Appearance</Text>
-        <View style={styles.settingRow}>
-          <View style={styles.settingInfo}>
-            <MaterialIcons name="dark-mode" size={24} color={isDarkMode ? '#FFF' : '#2C3E50'} />
-            <Text style={[styles.settingText, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Dark Mode</Text>
-          </View>
-          <Switch
-            value={isDarkMode}
-            onValueChange={handleThemeChange}
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'}
-          />
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <LinearGradient
+        colors={[theme.colors.primary, theme.colors.secondary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
-      </View>
+      </LinearGradient>
 
-      {/* Currency Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Currency</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.currencyList}>
-          {currencies.map(currency => (
-            <TouchableOpacity
-              key={currency.code}
-              style={[
-                styles.currencyOption,
-                selectedCurrency === currency.code && styles.selectedCurrency,
-                { backgroundColor: isDarkMode ? '#333' : '#FFF' }
-              ]}
-              onPress={() => handleCurrencySelect(currency.code)}
-            >
-              <Text style={[
-                styles.currencyText,
-                selectedCurrency === currency.code && styles.selectedCurrencyText,
-                { color: isDarkMode ? '#FFF' : '#2C3E50' }
-              ]}>
-                {currency.symbol} {currency.code}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+      <View style={styles.content}>
+        {/* Theme Options Section */}
+        <View style={[styles.section, { backgroundColor: theme.colors.cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Choose Your Theme</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.themeList}>
+            {Object.entries(themeOptions).map(([key, option]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.themeOption,
+                  { backgroundColor: option.colors.cardBackground },
+                  theme.name === option.name && styles.selectedTheme
+                ]}
+                onPress={() => setTheme(key)}
+              >
+                <LinearGradient
+                  colors={[option.colors.primary, option.colors.secondary]}
+                  style={styles.themeColorPreview}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                />
+                <Text style={[styles.themeText, { color: option.colors.text }]}>
+                  {option.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
-      {/* Export Section */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Export Data</Text>
-        <View style={styles.exportButtons}>
-          <TouchableOpacity
-            style={[styles.exportButton, { backgroundColor: isDarkMode ? '#333' : '#FFF' }]}
-            onPress={() => exportData('CSV')}
-          >
-            <MaterialIcons name="file-download" size={24} color="#614385" />
-            <Text style={[styles.exportButtonText, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Export as CSV</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.exportButton, { backgroundColor: isDarkMode ? '#333' : '#FFF' }]}
-            onPress={() => exportData('PDF')}
-          >
-            <MaterialIcons name="picture-as-pdf" size={24} color="#614385" />
-            <Text style={[styles.exportButtonText, { color: isDarkMode ? '#FFF' : '#2C3E50' }]}>Export as PDF</Text>
-          </TouchableOpacity>
+        {/* Currency Section */}
+        <View style={[styles.section, { backgroundColor: theme.colors.cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Select Currency</Text>
+          <View style={styles.currencyGrid}>
+            {currencies.map(curr => (
+              <TouchableOpacity
+                key={curr.code}
+                style={[
+                  styles.currencyOption,
+                  { backgroundColor: theme.colors.inputBackground },
+                  currency.code === curr.code && styles.selectedCurrency
+                ]}
+                onPress={() => handleCurrencySelect(curr.code)}
+              >
+                <Text style={[styles.currencySymbol, { 
+                  color: currency.code === curr.code ? '#FFF' : theme.colors.primary 
+                }]}>{curr.symbol}</Text>
+                <Text style={[styles.currencyCode, { 
+                  color: currency.code === curr.code ? '#FFF' : theme.colors.text 
+                }]}>{curr.code}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Export Section */}
+        <View style={[styles.section, { backgroundColor: theme.colors.cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Export Data</Text>
+          <View style={styles.exportButtons}>
+            {['CSV', 'PDF'].map((format) => (
+              <TouchableOpacity
+                key={format}
+                style={[styles.exportButton, { backgroundColor: theme.colors.inputBackground }]}
+                onPress={() => exportData(format as 'CSV' | 'PDF')}
+              >
+                <MaterialIcons 
+                  name={format === 'CSV' ? 'file-download' : 'picture-as-pdf'} 
+                  size={24} 
+                  color={theme.colors.primary} 
+                />
+                <Text style={[styles.exportButtonText, { color: theme.colors.text }]}>
+                  Export as {format}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -145,63 +173,110 @@ const Settings = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+  },
+  headerGradient: {
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginBottom: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F5',
-  },
-  backButton: {
-    marginRight: 16,
+    paddingHorizontal: 20,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
+    color: 'white',
+    marginLeft: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    paddingHorizontal: 16,
   },
   section: {
+    borderRadius: 24,
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F5',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
+  themeList: {
+    marginBottom: 8,
+  },
+  themeOption: {
+    padding: 16,
+    borderRadius: 16,
+    marginRight: 12,
+    width: 120,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  selectedTheme: {
+    transform: [{scale: 1.05}],
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+  },
+  themeColorPreview: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginBottom: 12,
+  },
+  themeText: {
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 16,
   },
-  settingRow: {
+  currencyGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  settingInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 12,
   },
-  settingText: {
-    fontSize: 16,
-  },
-  currencyList: {
-    flexDirection: 'row',
-  },
   currencyOption: {
-    padding: 12,
-    borderRadius: 8,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   selectedCurrency: {
     backgroundColor: '#614385',
+    transform: [{scale: 1.05}],
   },
-  currencyText: {
-    fontSize: 16,
+  currencySymbol: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 4,
   },
-  selectedCurrencyText: {
-    color: 'white',
+  currencyCode: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   exportButtons: {
     gap: 12,
@@ -209,14 +284,13 @@ const styles = StyleSheet.create({
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    padding: 20,
+    borderRadius: 16,
     gap: 12,
   },
   exportButtonText: {
     fontSize: 16,
+    fontWeight: '600',
   },
 });
 

@@ -69,9 +69,9 @@ export default function YearlyTab() {
           yAxisLabel="$"
           yAxisSuffix=""
           chartConfig={{
-            backgroundColor: theme.cardBackground,
-            backgroundGradientFrom: theme.cardBackground,
-            backgroundGradientTo: theme.cardBackground,
+            backgroundColor: theme.background,
+            backgroundGradientFrom: theme.background,
+            backgroundGradientTo: theme.background,
             decimalPlaces: 0,
             color: (opacity = 1) => `rgba(97, 67, 133, ${opacity})`,
             style: {

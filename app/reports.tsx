@@ -4,7 +4,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import DailyTab from '../components/reports/DailyTab';
 import MonthlyTab from '../components/reports/MonthlyTab';
 import YearlyTab from '../components/reports/YearlyTab';
 
@@ -32,11 +31,10 @@ export default function Reports() {
           tabBarInactiveTintColor: '#666',
         }}
       >
-            <Tab.Screen name="Daily" component={DailyTab} />
-            <Tab.Screen name="Monthly" component={MonthlyTab} />
-            <Tab.Screen name="Yearly" component={YearlyTab} />
-          </Tab.Navigator>
-      </View>
+        <Tab.Screen name="Monthly" component={MonthlyTab} />
+        <Tab.Screen name="Yearly" component={YearlyTab} />
+      </Tab.Navigator>
+    </View>
   );
 }
 
