@@ -17,7 +17,7 @@ interface Transaction {
 }
 
 export default function YearlyTab() {
-  const theme = useTheme();
+  const { theme } = useTheme();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   
   useEffect(() => {
@@ -58,10 +58,10 @@ export default function YearlyTab() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.text }]}>Yearly Overview</Text>
+    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Yearly Overview</Text>
       
-      <View style={styles.chartContainer}>
+      <View style={[styles.chartContainer, { backgroundColor: theme.colors.cardBackground }]}>
         <BarChart
           data={chartData}
           width={width - 40}
@@ -69,11 +69,12 @@ export default function YearlyTab() {
           yAxisLabel="$"
           yAxisSuffix=""
           chartConfig={{
-            backgroundColor: theme.background,
-            backgroundGradientFrom: theme.background,
-            backgroundGradientTo: theme.background,
+            backgroundColor: theme.colors.cardBackground,
+            backgroundGradientFrom: theme.colors.cardBackground,
+            backgroundGradientTo: theme.colors.cardBackground,
             decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(97, 67, 133, ${opacity})`,
+            color: (opacity = 1) => `rgba(${theme.isDark ? '255, 255, 255,' : '97, 67, 133,'} ${opacity})`,
+            labelColor: (opacity = 1) => `rgba(${theme.isDark ? '255, 255, 255,' : '0, 0, 0,'} ${opacity})`,
             style: {
               borderRadius: 16,
             },
@@ -82,13 +83,13 @@ export default function YearlyTab() {
         />
       </View>
 
-      <View style={styles.statsContainer}>
-        <Text style={[styles.statsTitle, { color: theme.text }]}>Annual Summary</Text>
-        <Text style={[styles.statsText, { color: theme.textSecondary }]}>
+      <View style={[styles.statsContainer, { backgroundColor: theme.colors.cardBackground }]}>
+        <Text style={[styles.statsTitle, { color: theme.colors.text }]}>Annual Summary</Text>
+        <Text style={[styles.statsText, { color: theme.colors.textSecondary }]}>
           Total Yearly Expenses: $
           {yearlyData.reduce((sum, amount) => sum + amount, 0).toFixed(2)}
         </Text>
-        <Text style={[styles.statsText, { color: theme.textSecondary }]}>
+        <Text style={[styles.statsText, { color: theme.colors.textSecondary }]}>
           Average Monthly: $
           {(yearlyData.reduce((sum, amount) => sum + amount, 0) / 12).toFixed(2)}
         </Text>

@@ -214,41 +214,49 @@ const FinanceDashboard = () => {
   );
 
   const renderAddTransactionForm = () => (
-    <View style={styles.addTransactionForm}>
-      <View style={styles.typeSelector}>
+    <View style={[styles.addTransactionForm, { backgroundColor: theme.colors.cardBackground }]}>
+      <View style={[styles.typeSelector, { backgroundColor: theme.colors.inputBackground }]}>
         <TouchableOpacity
           style={[
             styles.typeButton,
-            { backgroundColor: selectedType === 'expense' ? '#FF5252' : '#FFFFFF' },
+            { backgroundColor: selectedType === 'expense' ? theme.colors.error : theme.colors.inputBackground },
           ]}
           onPress={() => setSelectedType('expense')}
         >
-          <Text style={{ color: selectedType === 'expense' ? 'white' : '#2C3E50' }}>Expense</Text>
+          <Text style={{ color: selectedType === 'expense' ? 'white' : theme.colors.text }}>Expense</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.typeButton,
-            { backgroundColor: selectedType === 'income' ? '#4CAF50' : '#FFFFFF' },
+            { backgroundColor: selectedType === 'income' ? theme.colors.success : theme.colors.inputBackground },
           ]}
           onPress={() => setSelectedType('income')}
         >
-          <Text style={{ color: selectedType === 'income' ? 'white' : '#2C3E50' }}>Income</Text>
+          <Text style={{ color: selectedType === 'income' ? 'white' : theme.colors.text }}>Income</Text>
         </TouchableOpacity>
       </View>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { 
+          backgroundColor: theme.colors.inputBackground, 
+          color: theme.colors.text,
+          borderColor: theme.colors.border
+        }]}
         placeholder="Amount"
-        placeholderTextColor="#666666"
+        placeholderTextColor={theme.colors.textSecondary}
         keyboardType="numeric"
         value={newAmount}
         onChangeText={setNewAmount}
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { 
+          backgroundColor: theme.colors.inputBackground, 
+          color: theme.colors.text,
+          borderColor: theme.colors.border
+        }]}
         placeholder="Description"
-        placeholderTextColor="#666666"
+        placeholderTextColor={theme.colors.textSecondary}
         value={newDescription}
         onChangeText={setNewDescription}
       />
@@ -256,7 +264,7 @@ const FinanceDashboard = () => {
       {renderCategorySelector()}
 
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, { backgroundColor: theme.colors.primary }]}
         onPress={addTransaction}
       >
         <Text style={styles.addButtonText}>Add Transaction</Text>
@@ -732,6 +740,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     fontSize: 16,
+    borderWidth: 1,
   },
   addButton: {
     padding: 16,
